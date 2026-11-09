@@ -1,0 +1,13 @@
+# Compilacion de NetBeans
+build/
+
+# Configuracion privada de la maquina (rutas absolutas)
+nbproject/private/
+
+# Archivos temporales
+*.log
+*.tmp
+.DS_Store
+Thumbs.db
+
+# IMPORTANTE: dist/ NO se ignora porque contiene el WAR que despliega Render

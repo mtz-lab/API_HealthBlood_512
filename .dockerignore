@@ -1,0 +1,10 @@
+# Solo necesitamos el WAR ya compilado y el Dockerfile
+build/
+nbproject/
+src/
+test/
+web/
+database/
+.git/
+.gitignore
+*.md

@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: api-healthblood-512
+    runtime: docker
+    plan: free
+    region: virginia
+    healthCheckPath: /api/glucosa/saludar
+    envVars:
+      - key: DB_HOST
+        sync: false
+      - key: DB_PORT
+        value: "4000"
+      - key: DB_NAME
+        value: gluco_api
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_SSL
+        value: "true"
