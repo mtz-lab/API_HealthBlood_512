@@ -40,7 +40,7 @@ git push -u origin main
 
 | Campo | Valor |
 | --- | --- |
-| Name | `api-healthblood-512` |
+| Name | `gluco-api-mtz-lab` |
 | Region | `Virginia` (si tu TiDB esta en `us-east-1`) |
 | Branch | `main` |
 | Language | `Docker` |

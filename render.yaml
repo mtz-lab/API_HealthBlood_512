@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: api-healthblood-512
+    name: gluco-api-mtz-lab
     runtime: docker
     plan: free
     region: virginia
