@@ -11,7 +11,7 @@ services:
       - key: DB_PORT
         value: "4000"
       - key: DB_NAME
-        value: gluco_api
+        value: gluco_API
       - key: DB_USER
         sync: false
       - key: DB_PASSWORD
