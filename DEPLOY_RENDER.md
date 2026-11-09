@@ -72,6 +72,12 @@ Reemplaza `TU-APP` por el nombre que le diste en Render:
 - Salud: `https://TU-APP.onrender.com/api/glucosa/saludar`
 - Usuarios: `https://TU-APP.onrender.com/api/glucosa/getAllUsuarios`
 - Medidas: `https://TU-APP.onrender.com/api/glucosa/getAllMedidas`
+- Diagnostico de la base de datos: `https://TU-APP.onrender.com/api/glucosa/dbDiagnostico`
+
+El endpoint `dbDiagnostico` indica si las variables `DB_HOST`, `DB_USER` y
+`DB_PASSWORD` llegaron al contenedor (no muestra la contrasena), a que host y
+base de datos intenta conectarse, y si las tablas `usuario` y `medida` existen.
+Es la forma mas rapida de saber por que falla la conexion.
 
 ## 5. Actualizar la aplicacion
 

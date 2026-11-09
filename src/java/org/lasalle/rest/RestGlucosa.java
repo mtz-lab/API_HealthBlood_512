@@ -14,8 +14,15 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
 import java.sql.SQLIntegrityConstraintViolationException;
+import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import org.lasalle.controller.ConnectionMysql;
 import org.lasalle.controller.ControllerUsuario;
 import org.lasalle.controller.ControllerMedida;
 import org.lasalle.model.Usuario;
@@ -82,9 +89,9 @@ public class RestGlucosa {
         
         }catch (Exception e){
             e.printStackTrace();
-            out = """
-                  {"result": "Lista vacia"}
-                  """;
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("{\"result\":\"No fue posible consultar los usuarios. Revisa /api/glucosa/dbDiagnostico\"}")
+                    .build();
         }
         return Response.ok(out).build();
     }
@@ -244,7 +251,78 @@ public class RestGlucosa {
         }
     }
 
-    
+    /**
+     * Diagnostico de la conexion. No muestra la contrasena y solo muestra el
+     * usuario enmascarado. Sirve para comprobar si las variables de entorno
+     * del hosting (Render) llegaron al proceso y si la base de datos responde.
+     */
+    @Path("dbDiagnostico")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response dbDiagnostico() {
+        Gson gson = new Gson();
+        Map<String, String> info = new LinkedHashMap<>();
+
+        String host = ConnectionMysql.config("DB_HOST", "127.0.0.1");
+        String port = ConnectionMysql.config("DB_PORT", "3306");
+        String dbName = ConnectionMysql.config("DB_NAME", "gluco_api");
+        String user = ConnectionMysql.config("DB_USER", "root");
+        boolean ssl = Boolean.parseBoolean(ConnectionMysql.config("DB_SSL", "false"));
+
+        info.put("DB_HOST_definida", ConnectionMysql.presente("DB_HOST") ? "si" : "NO (se usa el valor local)");
+        info.put("host", host);
+        info.put("puerto", port);
+        info.put("baseDeDatos", dbName);
+        info.put("DB_USER_definida", ConnectionMysql.presente("DB_USER") ? "si" : "NO (se usa el valor local)");
+        info.put("usuario", enmascarar(user));
+        info.put("DB_PASSWORD_definida", ConnectionMysql.presente("DB_PASSWORD") ? "si" : "NO");
+        info.put("ssl", String.valueOf(ssl));
+
+        ConnectionMysql conexion = new ConnectionMysql();
+        Connection conn = conexion.open();
+        if (conn == null) {
+            info.put("conexion", "ERROR: no se pudo conectar");
+        } else {
+            try (Connection c = conn) {
+                DatabaseMetaData md = c.getMetaData();
+                info.put("conexion", "OK");
+                info.put("servidor", md.getDatabaseProductName() + " " + md.getDatabaseProductVersion());
+                info.put("tabla_usuario", existeTabla(c, "usuario") ? "OK" : "NO EXISTE");
+                info.put("tabla_medida", existeTabla(c, "medida") ? "OK" : "NO EXISTE");
+                info.put("registros_usuario", contar(c, "usuario"));
+                info.put("registros_medida", contar(c, "medida"));
+            } catch (Exception e) {
+                info.put("conexion", "OK, pero fallo la consulta de metadatos: " + e.getMessage());
+            }
+        }
+
+        return Response.ok(gson.toJson(info)).build();
+    }
+
+    private String enmascarar(String texto) {
+        if (texto == null || texto.length() <= 4) {
+            return "***";
+        }
+        return texto.substring(0, Math.min(6, texto.length())) + "***";
+    }
+
+    private boolean existeTabla(Connection c, String tabla) {
+        try (ResultSet rs = c.getMetaData().getTables(c.getCatalog(), null, tabla,
+                new String[]{"TABLE"})) {
+            return rs.next();
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private String contar(Connection c, String tabla) {
+        try (Statement st = c.createStatement();
+                ResultSet rs = st.executeQuery("SELECT COUNT(*) FROM " + tabla)) {
+            return rs.next() ? String.valueOf(rs.getLong(1)) : "?";
+        } catch (Exception e) {
+            return "error";
+        }
+    }
 }
 
 

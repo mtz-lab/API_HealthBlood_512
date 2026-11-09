@@ -26,7 +26,7 @@ public class ConnectionMysql {
      * Lee una variable de entorno y, si no existe, una propiedad del sistema.
      * Si tampoco existe, devuelve el valor por defecto.
      */
-    private String config(String name, String defaultValue) {
+    public static String config(String name, String defaultValue) {
         String value = System.getenv(name);
         if (value == null || value.trim().isEmpty()) {
             value = System.getProperty(name);
@@ -35,6 +35,15 @@ public class ConnectionMysql {
             return defaultValue;
         }
         return value.trim();
+    }
+
+    /**
+     * Indica si una variable de entorno llego definida al proceso (sin contar
+     * los valores por defecto). Sirve para diagnosticar despliegues en la nube.
+     */
+    public static boolean presente(String name) {
+        String value = System.getenv(name);
+        return value != null && !value.trim().isEmpty();
     }
 
     public Connection open() {
